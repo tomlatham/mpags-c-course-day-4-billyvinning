@@ -28,6 +28,18 @@ bool processCommandLine(const std::vector<std::string>& args,
       settings.versionRequested = true;
       break;
     }
+    else if (args[i] == "--cipher"){
+	if(args[i+1] == "caesar")
+	{
+		settings.cipherType = CipherType::caesar;
+	}
+	else if(args[i+1] == "playfair")
+	{
+		settings.cipherType = CipherType::playfair;
+	}
+
+	break;
+    }
     else if (args[i] == "-i") {
       // Handle input file option
       // Next element is filename unless -i is the last argument

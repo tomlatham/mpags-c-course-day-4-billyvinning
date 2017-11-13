@@ -7,7 +7,7 @@
 
 // Our project headers
 #include "CipherMode.hpp"
-
+#include "CipherType.hpp"
 /**
  * \file ProcessCommandLine.hpp
  * \brief Contains the declarations of the data structures and functions associated with the processing of command-line arguments
@@ -23,7 +23,8 @@ struct ProgramSettings {
   std::string inputFile;  ///< Name of the input file
   std::string outputFile; ///< Name of the output file
   std::string cipherKey;  ///< Key to be used in encrypting/decrypting routine
-  CipherMode cipherMode;  ///< Flag indicating the mode in which the cipher should run (i.e. encrypt or decrypt)
+  CipherMode cipherMode;
+  CipherType cipherType;  ///< Flag indicating the mode in which the cipher should run (i.e. encrypt or decrypt)
 };
 
 /**

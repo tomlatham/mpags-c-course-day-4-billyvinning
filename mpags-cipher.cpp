@@ -9,7 +9,8 @@
 #include "TransformChar.hpp"
 #include "ProcessCommandLine.hpp"
 #include "CaesarCipher.hpp"
-  
+#include "CipherType.hpp"
+#include "PlayfairCipher.hpp"  
 // Main function of the mpags-cipher program
 int main(int argc, char* argv[])
 {
@@ -17,7 +18,7 @@ int main(int argc, char* argv[])
   const std::vector<std::string> cmdLineArgs {argv, argv+argc};
 
   // Options that might be set by the command-line arguments
-  ProgramSettings settings { false, false, "", "", "", CipherMode::Encrypt };
+  ProgramSettings settings { false, false, "", "", "", CipherMode::Encrypt, CipherType::caesar};
 
   // Process command line arguments
   bool cmdLineStatus { processCommandLine(cmdLineArgs, settings) };
@@ -41,10 +42,12 @@ int main(int argc, char* argv[])
       << "                   Stdin will be used if not supplied\n\n"
       << "  -o FILE          Write processed text to FILE\n"
       << "                   Stdout will be used if not supplied\n\n"
+      << "  -cipher TYPE     Specify the cipher type (caesar or playfair)\n\n"
       << "  -k KEY           Specify the cipher KEY\n"
       << "                   A null key, i.e. no encryption, is used if not supplied\n\n"
       << "  --encrypt        Will use the cipher to encrypt the input text (default behaviour)\n\n"
       << "  --decrypt        Will use the cipher to decrypt the input text\n\n";
+      
     // Help requires no further action, so return from main,
     // with 0 used to indicate success
     return 0;
@@ -91,6 +94,8 @@ int main(int argc, char* argv[])
   // We have the key as a string, but the Caesar cipher needs an unsigned long, so we first need to convert it
   // We default to having a key of 0, i.e. no encryption, if no key was provided on the command line
   size_t caesarKey {0};
+  std::string playfairKey{""};
+
   if ( ! settings.cipherKey.empty() ) {
     // Before doing the conversion we should check that the string contains a
     // valid positive integer.
@@ -104,18 +109,39 @@ int main(int argc, char* argv[])
     // final day of this course - they are a very complex area of C++ that
     // could take an entire course on their own!)
     for ( const auto& elem : settings.cipherKey ) {
-      if ( ! std::isdigit(elem) ) {
+      if ( ! std::isdigit(elem) && settings.cipherType == CipherType::caesar) {
 	std::cerr << "[error] cipher key must be an unsigned long integer for Caesar cipher,\n"
 	          << "        the supplied key (" << settings.cipherKey << ") could not be successfully converted" << std::endl;
 	return 1;
       }
-    }
-    caesarKey = std::stoul(settings.cipherKey);
-  }
 
+    }
+	switch(settings.cipherType)
+	{
+		case CipherType::caesar:
+    			caesarKey = std::stoul(settings.cipherKey);
+		case CipherType::playfair:
+			playfairKey = settings.cipherKey;	
+	}
+  }
+  
   // Run the Caesar cipher (using the specified key and encrypt/decrypt flag) on the input text
-  CaesarCipher cipher { caesarKey };
-  std::string outputText { cipher.applyCipher( inputText, settings.cipherMode ) };
+  CaesarCipher caesarcipher {caesarKey};
+  PlayfairCipher playfaircipher {playfairKey};
+
+  std::string outputText {""};
+
+  switch(settings.cipherType)
+  {
+	case CipherType::caesar:
+		{
+			outputText = caesarcipher.CaesarCipher::applyCipher(inputText, settings.cipherMode);
+		}
+	case CipherType::playfair:
+		{
+			outputText = playfaircipher.PlayfairCipher::applyCipher(inputText, settings.cipherMode);
+		}
+  }
 
   // Output the transliterated text
   if (!settings.outputFile.empty()) {
