@@ -1,5 +1,6 @@
 #include<string>
 #include<PlayfairCipher.hpp>
+#include<CipherMode.hpp>
 #include<iostream>
 #include<algorithm>
 #include<utility>
@@ -70,68 +71,127 @@ const std::string PlayfairCipher::applyCipher(const std::string& inputText, cons
 {
 	std::string input = inputText;
 
+	
+	std::pair<size_t,size_t> firstCoord, secondCoord;
+	size_t store;
 	// Change J->I
 	switch(cipherMode)
 	{
 		case CipherMode::Encrypt:
-			std::cout << "Encrypting..." << std::endl;
+			{
+				std::cout << "Encrypting..." << std::endl;
+				std::transform(input.begin(), input.end(), input.begin(), [] (char in) {if(in == 'J'){return 'I';} else{return in;}});
+				// If repeated chars in a digraph add an X or Q if XX
+				const std::string x = "X";
+				const std::string q = "Q";
+
+				for(size_t i = 1; i < input.length(); i++)
+				{
+					if(input[i] == input[i-1] && input[i] !='X') 
+					{
+						input.insert(i, x);
+					}
+					else if(input[i] == input[i-1] && input[i] == 'X')
+					{
+						input.insert(i, q);
+					}
+				}
+
+				// if the size of input is odd, add a trailing Z
+
+				if(input.length()%2 != 0)
+				{
+					input+="Z";
+				}
+	
+				// Loop over the input in Digraphs
+
+
+				for(size_t i = 0; i < input.length(); i+=2)
+				{
+					firstCoord = mapLetter2Coords_.find(input[i])->second;
+					secondCoord = mapLetter2Coords_.find(input[i+1])->second;
+
+				//	- Apply the rules to these coords to get `new' coords
+
+					if(firstCoord.first != secondCoord.first && firstCoord.second != secondCoord.second)
+					{
+						store = firstCoord.first;
+						firstCoord.first = secondCoord.first;
+						secondCoord.first = store;
+					}
+					else if(firstCoord.first == secondCoord.first)
+					{
+						firstCoord.second = (firstCoord.second + 1)%5;
+						secondCoord.second = (secondCoord.second + 1)%5;
+					}
+					else if(firstCoord.second == secondCoord.second)
+					{
+						firstCoord.first = (firstCoord.first + 1)%5;
+						secondCoord.first = (secondCoord.first + 1)%5;
+					}
+					// 	- Find the letter associated with the new coords
+
+					input[i] = mapCoords2Letter_.find(firstCoord)->second;	
+					input[i+1] = mapCoords2Letter_.find(secondCoord)->second;
+				}
+
+				
+			}break;
+
 		case CipherMode::Decrypt:
-			std::cout << "Warning: decryption not yet implemented, encrypting instead." << std::endl;
+			{
+				std::cout << "Decrypting..." << std::endl;
+			
+				for(size_t i = 0; i < input.length(); i+=2)
+				{
+					firstCoord = mapLetter2Coords_.find(input[i])->second;
+					secondCoord = mapLetter2Coords_.find(input[i+1])->second;
+
+				//	- Apply the rules to these coords to get decrypted coords
+
+					if(firstCoord.first != secondCoord.first && firstCoord.second != secondCoord.second)
+					{
+						store = firstCoord.first;
+						firstCoord.first = secondCoord.first;
+						secondCoord.first = store;
+					}
+					else if(firstCoord.first == secondCoord.first)
+					{
+						firstCoord.second = (firstCoord.second - 1)%5;
+						secondCoord.second = (secondCoord.second - 1)%5;
+					}
+					else if(firstCoord.second == secondCoord.second)
+					{
+						firstCoord.first = (firstCoord.first - 1)%5;
+						secondCoord.first = (secondCoord.first - 1)%5;
+					}
+					// 	- Find the letter associated with the new coords
+
+					input[i] = mapCoords2Letter_.find(firstCoord)->second;	
+					input[i+1] = mapCoords2Letter_.find(secondCoord)->second;
+				}
+				
+				//Erases double letter markers and appended Z
+				for(size_t i = 2; i < input.length(); i++)
+				{
+					if(input[i-2]==input[i] && input[i-1] == 'X')
+					{
+						input.erase(i-1, 1);
+					}
+					else if(input[i-2] == input[i] && input[i-1] == 'Q')
+					{
+						input.erase(i-1, 1);
+					}
+
+					if(input[input.length()-1] == 'Z')
+					{
+						input.erase(input.length()-1, 1);
+					}
+				}
+			}break;
 	}
 	
-	std::transform(input.begin(), input.end(), input.begin(), [] (char in) {if(in == 'J'){return 'I';} else{return in;}});
-	// If repeated chars in a digraph add an X or Q if XX
-	const std::string x = "X";
-
-	for(size_t i = 1; i < input.length(); i++)
-	{
-		if(input[i] == input[i-1])
-		{
-			input.insert(i, x);
-		}
-	}
-
-	// if the size of input is odd, add a trailing Z
-
-	if(input.length()%2 != 0)
-	{
-		input+="Z";
-	}
-	
-	// Loop over the input in Digraphs
-
-	std::pair<size_t,size_t> firstCoord, secondCoord;
-	size_t store;
-
-	for(size_t i = 0; i < input.length(); i+=2)
-	{
-		firstCoord = mapLetter2Coords_.find(input[i])->second;
-		secondCoord = mapLetter2Coords_.find(input[i+1])->second;
-
-	//	- Apply the rules to these coords to get `new' coords
-
-		if(firstCoord.first != secondCoord.first && firstCoord.second != secondCoord.second)
-		{
-			store = firstCoord.first;
-			firstCoord.first = secondCoord.first;
-			secondCoord.first = store;
-		}
-		else if(firstCoord.first == secondCoord.first)
-		{
-			firstCoord.second = (firstCoord.second + 1)%5;
-			secondCoord.second = (secondCoord.second + 1)%5;
-		}
-		else if(firstCoord.second == secondCoord.second)
-		{
-			firstCoord.first = (firstCoord.first + 1)%5;
-			secondCoord.first = (secondCoord.first + 1)%5;
-		}
-	// 	- Find the letter associated with the new coords
-
-		input[i] = mapCoords2Letter_.find(firstCoord)->second;	
-		input[i+1] = mapCoords2Letter_.find(secondCoord)->second;
-	}
-
 	// return the text
 	std::cout << "Playfair cipher applied!" << std::endl;
 	const std::string output = input;

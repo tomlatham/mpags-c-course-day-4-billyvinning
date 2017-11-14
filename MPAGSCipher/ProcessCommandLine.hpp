@@ -23,8 +23,8 @@ struct ProgramSettings {
   std::string inputFile;  ///< Name of the input file
   std::string outputFile; ///< Name of the output file
   std::string cipherKey;  ///< Key to be used in encrypting/decrypting routine
-  CipherMode cipherMode;
-  CipherType cipherType;  ///< Flag indicating the mode in which the cipher should run (i.e. encrypt or decrypt)
+  CipherMode cipherMode;  ///< Flag indicating the mode in which the cipher should run (i.e. encrypt or decrypt)
+  CipherType cipherType;  ///< Flag indicating the type of cipher to be applied
 };
 
 /**

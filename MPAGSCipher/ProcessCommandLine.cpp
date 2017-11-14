@@ -3,7 +3,8 @@
 
 // Our project headers
 #include "ProcessCommandLine.hpp"
-
+#include "CipherMode.hpp"
+#include "CipherType.hpp"
 bool processCommandLine(const std::vector<std::string>& args,
                         ProgramSettings& settings)
 {
@@ -37,8 +38,7 @@ bool processCommandLine(const std::vector<std::string>& args,
 	{
 		settings.cipherType = CipherType::playfair;
 	}
-
-	break;
+	++i;
     }
     else if (args[i] == "-i") {
       // Handle input file option
@@ -86,8 +86,8 @@ bool processCommandLine(const std::vector<std::string>& args,
       }
     }
     else if ( args[i] == "--encrypt" ) {
-            settings.cipherMode = CipherMode::Encrypt;
-    }
+            settings.cipherMode = CipherMode::Encrypt;   
+}
     else if ( args[i] == "--decrypt" ) {
             settings.cipherMode = CipherMode::Decrypt;
     }

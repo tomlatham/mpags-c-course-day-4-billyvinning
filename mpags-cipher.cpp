@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
   const std::vector<std::string> cmdLineArgs {argv, argv+argc};
 
   // Options that might be set by the command-line arguments
-  ProgramSettings settings { false, false, "", "", "", CipherMode::Encrypt, CipherType::caesar};
+  ProgramSettings settings { false, false, "", "", "", CipherMode::Decrypt, CipherType::caesar};
 
   // Process command line arguments
   bool cmdLineStatus { processCommandLine(cmdLineArgs, settings) };
@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
   if( !cmdLineStatus ) {
     return 1;
   }
-
+	
   // Handle help, if requested
   if (settings.helpRequested) {
     // Line splitting for readability

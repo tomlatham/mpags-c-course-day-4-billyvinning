@@ -10,6 +10,8 @@ add_library(MPAGSCipher STATIC
   TransformChar.cpp
   PlayfairCipher.cpp
   PlayfairCipher.hpp
+  CipherMode.hpp
+  CipherType.hpp
   )
 
 target_include_directories(MPAGSCipher
