@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
   const std::vector<std::string> cmdLineArgs {argv, argv+argc};
 
   // Options that might be set by the command-line arguments
-  ProgramSettings settings { false, false, "", "", "", CipherMode::Decrypt, CipherType::caesar};
+  ProgramSettings settings { false, false, "", "", "", CipherMode::Encrypt, CipherType::Caesar};
 
   // Process command line arguments
   bool cmdLineStatus { processCommandLine(cmdLineArgs, settings) };
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
       << "                   Stdin will be used if not supplied\n\n"
       << "  -o FILE          Write processed text to FILE\n"
       << "                   Stdout will be used if not supplied\n\n"
-      << "  -cipher TYPE     Specify the cipher type (caesar or playfair)\n\n"
+      << "  --cipher TYPE    Specify the cipher type: caesar (the default) or playfair\n\n"
       << "  -k KEY           Specify the cipher KEY\n"
       << "                   A null key, i.e. no encryption, is used if not supplied\n\n"
       << "  --encrypt        Will use the cipher to encrypt the input text (default behaviour)\n\n"
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
     // final day of this course - they are a very complex area of C++ that
     // could take an entire course on their own!)
     for ( const auto& elem : settings.cipherKey ) {
-      if ( ! std::isdigit(elem) && settings.cipherType == CipherType::caesar) {
+      if ( ! std::isdigit(elem) && settings.cipherType == CipherType::Caesar) {
 	std::cerr << "[error] cipher key must be an unsigned long integer for Caesar cipher,\n"
 	          << "        the supplied key (" << settings.cipherKey << ") could not be successfully converted" << std::endl;
 	return 1;
@@ -118,9 +118,9 @@ int main(int argc, char* argv[])
     }
 	switch(settings.cipherType)
 	{
-		case CipherType::caesar:
+		case CipherType::Caesar:
     			caesarKey = std::stoul(settings.cipherKey);
-		case CipherType::playfair:
+		case CipherType::Playfair:
 			playfairKey = settings.cipherKey;	
 	}
   }
@@ -133,11 +133,11 @@ int main(int argc, char* argv[])
 
   switch(settings.cipherType)
   {
-	case CipherType::caesar:
+	case CipherType::Caesar:
 		{
 			outputText = caesarcipher.CaesarCipher::applyCipher(inputText, settings.cipherMode);
 		}
-	case CipherType::playfair:
+	case CipherType::Playfair:
 		{
 			outputText = playfaircipher.PlayfairCipher::applyCipher(inputText, settings.cipherMode);
 		}

@@ -8,11 +8,11 @@
 
 /**
  * \enum CipherType
- * \brief Enumeration to define the types in which the ciphers can operate
+ * \brief Enumeration to define the types of ciphers that can be used
  */
 enum class CipherType {
-  caesar, ///< Apply caesar cipher
-  playfair  ///< Apply playfair cipher
+  Caesar, ///< Apply caesar cipher
+  Playfair  ///< Apply playfair cipher
 };
 
 #endif // MPAGSCIPHER_CIPHERTYPE_HPP

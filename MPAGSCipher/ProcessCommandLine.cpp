@@ -32,11 +32,11 @@ bool processCommandLine(const std::vector<std::string>& args,
     else if (args[i] == "--cipher"){
 	if(args[i+1] == "caesar")
 	{
-		settings.cipherType = CipherType::caesar;
+		settings.cipherType = CipherType::Caesar;
 	}
 	else if(args[i+1] == "playfair")
 	{
-		settings.cipherType = CipherType::playfair;
+		settings.cipherType = CipherType::Playfair;
 	}
 	++i;
     }

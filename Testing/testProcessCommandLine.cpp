@@ -6,7 +6,7 @@
 
 TEST_CASE("Help found correctly", "[commandline]") {
 
-  ProgramSettings prog_set{false, false, "", "", "", CipherMode::Encrypt, CipherType::caesar};
+  ProgramSettings prog_set{false, false, "", "", "", CipherMode::Encrypt, CipherType::Caesar};
   std::vector<std::string> cmd_line = {"mpags-cipher", "--help"};
   bool res = processCommandLine(cmd_line, prog_set);
 
@@ -16,7 +16,7 @@ TEST_CASE("Help found correctly", "[commandline]") {
 
 TEST_CASE("Version found correctly", "[commandline]") {
 
-  ProgramSettings prog_set{false, false, "", "", "", CipherMode::Encrypt, CipherType::caesar};
+  ProgramSettings prog_set{false, false, "", "", "", CipherMode::Encrypt, CipherType::Caesar};
   std::vector<std::string> cmd_line = {"mpags-cipher", "--version"};
   bool res = processCommandLine(cmd_line, prog_set);
 
@@ -26,8 +26,8 @@ TEST_CASE("Version found correctly", "[commandline]") {
 
 TEST_CASE("All other options processed correctly", "[commandline]") {
 
-  ProgramSettings prog_set{false, false, "", "", "", CipherMode::Encrypt, CipherType::caesar};
-  std::vector<std::string> cmd_line = {"mpags-cipher", "-i", "test-in.txt", "-o", "test-out.txt", "-k", "10", "--decrypt", "--cipher", "caesar"};
+  ProgramSettings prog_set{false, false, "", "", "", CipherMode::Encrypt, CipherType::Caesar};
+  std::vector<std::string> cmd_line = {"mpags-cipher", "-i", "test-in.txt", "-o", "test-out.txt", "-k", "10", "--decrypt", "--cipher", "Caesar"};
   bool res = processCommandLine(cmd_line, prog_set);
 
   REQUIRE( res );
@@ -35,5 +35,5 @@ TEST_CASE("All other options processed correctly", "[commandline]") {
   REQUIRE( prog_set.outputFile == "test-out.txt" );
   REQUIRE( prog_set.cipherKey == "10" );
   REQUIRE( prog_set.cipherMode == CipherMode::Decrypt );
-  REQUIRE( prog_set.cipherType == CipherType::caesar );
+  REQUIRE( prog_set.cipherType == CipherType::Caesar );
 }

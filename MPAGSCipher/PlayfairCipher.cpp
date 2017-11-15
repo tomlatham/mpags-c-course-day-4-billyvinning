@@ -6,18 +6,19 @@
 #include<utility>
 #include<map>
 
-PlayfairCipher::PlayfairCipher(const std::string& key): key_{key}
+PlayfairCipher::PlayfairCipher(const std::string& key)
 {
-	setKey(key_);
+	setKey(key);
 }
 
 void PlayfairCipher::setKey(const std::string& key)
 {
 	//store the original key
 	key_ = key;
+
 	// Append the alphabet
-	std::string alphabetStr_{alphabet_.begin(),alphabet_.end()};
-	key_.append(alphabetStr_);
+	key_.append("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
 	// Make sure the key is upper case
 	std::transform(key_.begin(), key_.end(), key_.begin(), ::toupper);
 	
@@ -33,19 +34,16 @@ void PlayfairCipher::setKey(const std::string& key)
 	std::string alreadySeen{""};
 	auto iterDuplicates = std::remove_if(key_.begin(), key_.end(), [&] (char in) {if(alreadySeen.find(in)!=std::string::npos){return true;}else{alreadySeen+=in; return false;}});
 	key_.erase(iterDuplicates, key_.end());
+
 	// Store the coords of each letter
-
-	std::map<char, std::pair<size_t, size_t>> mapLetter2Coords;
-        std::map<std::pair<size_t, size_t>, char> mapCoords2Letter;
-
 	size_t x{0},y{0};
-	std::pair<size_t,size_t> elem{x,y};
+	PlayfairCoords elem{x,y};
 	
 	for(size_t i = 0; i < key_.length() ; i++)
 	{
 		elem = std::make_pair(x,y);
-		mapLetter2Coords.insert(std::make_pair(key_[i], elem));
-		mapCoords2Letter.insert(std::make_pair(elem, key_[i]));
+		mapLetter2Coords_.insert(std::make_pair(key_[i], elem));
+		mapCoords2Letter_.insert(std::make_pair(elem, key_[i]));
 		x++;
 
 		if(x==5)
@@ -59,22 +57,20 @@ void PlayfairCipher::setKey(const std::string& key)
 		}
 	
 	}
-
-	// Store the playfair cipher key map
-	
-	mapLetter2Coords_ = mapLetter2Coords;
-	mapCoords2Letter_ = mapCoords2Letter;
-		
 }
 
-const std::string PlayfairCipher::applyCipher(const std::string& inputText, const CipherMode cipherMode)
+std::string PlayfairCipher::applyCipher(const std::string& inputText, const CipherMode cipherMode) const
 {
-	std::string input = inputText;
+	std::string input { inputText };
 
 	
-	std::pair<size_t,size_t> firstCoord, secondCoord;
-	size_t store;
-	// Change J->I
+	PlayfairCoords firstCoord, secondCoord;
+	// TEL - there's a lot of duplicated code here due to you introducing the switch this early
+	//     - also, having the replacement of J with I and insertion of X or Q to separate
+	//       identical letters in a digraph only in the encrypt raises some potential problems,
+	//       since you cannot guarantee that the text provided by the user for decryption
+	//       necessarily obeys the rules
+	//     - see our solution for another approach
 	switch(cipherMode)
 	{
 		case CipherMode::Encrypt:
@@ -85,42 +81,49 @@ const std::string PlayfairCipher::applyCipher(const std::string& inputText, cons
 				const std::string x = "X";
 				const std::string q = "Q";
 
-				for(size_t i = 1; i < input.length(); i++)
+				for(size_t i {0}; i < input.length(); i+=2)
 				{
-					if(input[i] == input[i-1] && input[i] !='X') 
+					if (i+1 == input.length())
 					{
-						input.insert(i, x);
+						// Check if this is the last character
+						break;
 					}
-					else if(input[i] == input[i-1] && input[i] == 'X')
+					else if(input[i] == input[i+1] && input[i] !='X') 
 					{
-						input.insert(i, q);
+						// If this character is the same as
+						// the next and neither are X,
+						// insert an X between them
+						input.insert(i+1, x);
+					}
+					else if(input[i] == input[i+1] && input[i] == 'X')
+					{
+						// If this character is the same as
+						// the next and both are X,
+						// insert a Q between them
+						input.insert(i+1, q);
 					}
 				}
+
+				std::cout << input << std::endl;
 
 				// if the size of input is odd, add a trailing Z
-
+				// unless the last character is already a Z,
+				// in which case add an X
 				if(input.length()%2 != 0)
 				{
-					input+="Z";
+					input += (input[input.length()-1] == 'Z') ? 'X' : 'Z';
 				}
 	
+				std::cout << input << std::endl;
+
 				// Loop over the input in Digraphs
-
-
 				for(size_t i = 0; i < input.length(); i+=2)
 				{
 					firstCoord = mapLetter2Coords_.find(input[i])->second;
 					secondCoord = mapLetter2Coords_.find(input[i+1])->second;
 
-				//	- Apply the rules to these coords to get `new' coords
-
-					if(firstCoord.first != secondCoord.first && firstCoord.second != secondCoord.second)
-					{
-						store = firstCoord.first;
-						firstCoord.first = secondCoord.first;
-						secondCoord.first = store;
-					}
-					else if(firstCoord.first == secondCoord.first)
+					// Apply the rules to these coords to get `new' coords
+					if(firstCoord.first == secondCoord.first)
 					{
 						firstCoord.second = (firstCoord.second + 1)%5;
 						secondCoord.second = (secondCoord.second + 1)%5;
@@ -130,8 +133,14 @@ const std::string PlayfairCipher::applyCipher(const std::string& inputText, cons
 						firstCoord.first = (firstCoord.first + 1)%5;
 						secondCoord.first = (secondCoord.first + 1)%5;
 					}
-					// 	- Find the letter associated with the new coords
+					else
+					{
+						size_t store = firstCoord.first;
+						firstCoord.first = secondCoord.first;
+						secondCoord.first = store;
+					}
 
+					// 	- Find the letter associated with the new coords
 					input[i] = mapCoords2Letter_.find(firstCoord)->second;	
 					input[i+1] = mapCoords2Letter_.find(secondCoord)->second;
 				}
@@ -148,53 +157,33 @@ const std::string PlayfairCipher::applyCipher(const std::string& inputText, cons
 					firstCoord = mapLetter2Coords_.find(input[i])->second;
 					secondCoord = mapLetter2Coords_.find(input[i+1])->second;
 
-				//	- Apply the rules to these coords to get decrypted coords
-
-					if(firstCoord.first != secondCoord.first && firstCoord.second != secondCoord.second)
+					// Apply the rules to these coords to get decrypted coords
+					if(firstCoord.first == secondCoord.first)
 					{
-						store = firstCoord.first;
-						firstCoord.first = secondCoord.first;
-						secondCoord.first = store;
-					}
-					else if(firstCoord.first == secondCoord.first)
-					{
-						firstCoord.second = (firstCoord.second - 1)%5;
-						secondCoord.second = (secondCoord.second - 1)%5;
+						firstCoord.second = (5 + firstCoord.second - 1)%5;
+						secondCoord.second = (5 + secondCoord.second - 1)%5;
 					}
 					else if(firstCoord.second == secondCoord.second)
 					{
-						firstCoord.first = (firstCoord.first - 1)%5;
-						secondCoord.first = (secondCoord.first - 1)%5;
+						firstCoord.first = (5 + firstCoord.first - 1)%5;
+						secondCoord.first = (5 + secondCoord.first - 1)%5;
 					}
-					// 	- Find the letter associated with the new coords
+					else
+					{
+						size_t store = firstCoord.first;
+						firstCoord.first = secondCoord.first;
+						secondCoord.first = store;
+					}
 
+					// 	- Find the letter associated with the new coords
 					input[i] = mapCoords2Letter_.find(firstCoord)->second;	
 					input[i+1] = mapCoords2Letter_.find(secondCoord)->second;
-				}
-				
-				//Erases double letter markers and appended Z
-				for(size_t i = 2; i < input.length(); i++)
-				{
-					if(input[i-2]==input[i] && input[i-1] == 'X')
-					{
-						input.erase(i-1, 1);
-					}
-					else if(input[i-2] == input[i] && input[i-1] == 'Q')
-					{
-						input.erase(i-1, 1);
-					}
-
-					if(input[input.length()-1] == 'Z')
-					{
-						input.erase(input.length()-1, 1);
-					}
 				}
 			}break;
 	}
 	
 	// return the text
 	std::cout << "Playfair cipher applied!" << std::endl;
-	const std::string output = input;
-	return output;
+	return input;
 
 }
