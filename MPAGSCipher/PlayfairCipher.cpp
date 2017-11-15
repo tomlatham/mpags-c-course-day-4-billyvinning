@@ -104,8 +104,6 @@ std::string PlayfairCipher::applyCipher(const std::string& inputText, const Ciph
 					}
 				}
 
-				std::cout << input << std::endl;
-
 				// if the size of input is odd, add a trailing Z
 				// unless the last character is already a Z,
 				// in which case add an X
@@ -114,8 +112,6 @@ std::string PlayfairCipher::applyCipher(const std::string& inputText, const Ciph
 					input += (input[input.length()-1] == 'Z') ? 'X' : 'Z';
 				}
 	
-				std::cout << input << std::endl;
-
 				// Loop over the input in Digraphs
 				for(size_t i = 0; i < input.length(); i+=2)
 				{
