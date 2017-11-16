@@ -135,11 +135,11 @@ int main(int argc, char* argv[])
   {
 	case CipherType::Caesar:
 		{
-			outputText = caesarcipher.CaesarCipher::applyCipher(inputText, settings.cipherMode);
+			outputText = caesarcipher.applyCipher(inputText, settings.cipherMode);
 		}
 	case CipherType::Playfair:
 		{
-			outputText = playfaircipher.PlayfairCipher::applyCipher(inputText, settings.cipherMode);
+			outputText = playfaircipher.applyCipher(inputText, settings.cipherMode);
 		}
   }
 
